@@ -11,8 +11,10 @@ Overdamped Langevin dynamics are used in many MCMC sampling algorithms to produc
 The repository contains:
 - main.jl: the optimization algorithm
 - potentials.jl: examples of one-dimensional potentials (minus log of target measure)
-- RWMH.jl: a Random Walk Metropolis-Hastings algorithm implementation where the optimal diffusion computed with main.jl can be used as a parameter
+- optimal_diffusion_computation.jl: script to perform the optimization algorithm on one-dimensional potentials
 - plot_optimized_diffusion.jl: plot the optimized diffusion obtained from the main.py script
+
+- RWMH.jl: a Random Walk Metropolis-Hastings algorithm implementation where the optimal diffusion computed with optimal_diffusion_computation.jl can be used as a parameter
 - plot_RWMH.jl: plot (unperiodized) trajectories and sampling results of the RWMH algorithm using either the optimal, homogenized or constant diffusion coefficient
 
 ## TODO

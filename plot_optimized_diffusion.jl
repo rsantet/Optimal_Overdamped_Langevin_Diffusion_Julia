@@ -1,4 +1,4 @@
-"""Plot the optimal diffusion obtained from the main.jl script.
+"""Plot the optimal diffusion obtained from the optimal_diffusion_computation.jl script.
 """
 
 using Plots, DelimitedFiles

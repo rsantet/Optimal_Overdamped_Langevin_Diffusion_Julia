@@ -4,7 +4,6 @@ This script uses IPOPT for the optimization procedure.
 """
 
 using LinearAlgebra, JuMP, Ipopt, DelimitedFiles
-include("potentials.jl")
 
 # Variables optimized in the code are x[i] =  exp(-\beta V(q_i))D(q_i)
 
@@ -202,9 +201,9 @@ function optim_algo(
     # Create optimiation model using the IPOPT optimizer
     model = Model(Ipopt.Optimizer)
     # Set a maximum number of iterations to 2000
-    set_optimizer_attribute(model, "max_iter", 2000)
+    set_optimizer_attribute(model, "max_iter", 200)
     # Set tolerance for the gradient norm
-    set_optimizer_attribute(model, "tol", 1e-8)
+    set_optimizer_attribute(model, "tol", 1e-4)
 
     # Register user defined functions
     register(model, :my_f, I, f, ∇f; autodiff=false)
@@ -233,13 +232,13 @@ function optim_algo(
         return
     end
 
+    x_opt = value.(x)
+    XX = [i / I for i in 0:(I-1)]
+    inv_mu_arr = map(x -> exp(V(x)), XX)
+    d_opt = x_opt .* inv_mu_arr
+    gap_opt = objective_value(model)
     # If success, saves
     if save
-        x_opt = value.(x)
-        XX = [i / I for i in 0:(I-1)]
-        inv_mu_arr = map(x -> exp(V(x)), XX)
-        d_opt = x_opt .* inv_mu_arr
-        gap_opt = objective_value(model)
         min_d = minimum(d_opt)
 
         mkpath(
@@ -275,26 +274,5 @@ function optim_algo(
         )
     end
 
-    return model
+    return d_opt, gap_opt
 end
-
-I = 500
-p = 2
-a = 0.0
-b = Inf
-V = sin_two_wells
-
-function mu(x)
-    return exp(-V(x))
-end
-
-XX = [i / I for i in range(0, I)]
-mu_arr = map(x -> exp(-V(x)), XX)
-Z = sum(mu_arr) / I
-pi_arr = mu_arr / Z
-
-optim_algo(
-    V, I, pi_arr, Z,
-    p=p,
-    a=a, b=b
-);
