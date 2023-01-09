@@ -12,7 +12,8 @@ The repository contains:
 - main.jl: the optimization algorithm
 - potentials.jl: examples of one-dimensional potentials (minus log of target measure)
 - RWMH.jl: a Random Walk Metropolis-Hastings algorithm implementation where the optimal diffusion computed with main.jl can be used as a parameter
-- plot_optimized_diffusion.jl: plot the optimized diffusion obtain from the main.py script
+- plot_optimized_diffusion.jl: plot the optimized diffusion obtained from the main.py script
+- plot_RWMH.jl: plot (unperiodized) trajectories and sampling results of the RWMH algorithm using either the optimal, homogenized or constant diffusion coefficient
 
 ## TODO
 - Propose a visualization of the behaviour of the optimal diffusion in the asymptotic regime of periodic homogenization
