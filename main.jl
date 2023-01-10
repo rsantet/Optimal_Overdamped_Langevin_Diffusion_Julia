@@ -15,9 +15,11 @@ using LinearAlgebra, JuMP, Ipopt, DelimitedFiles
     I,
     pi_arr::AbstractVector{T},
     Z;
-    p=2.,
-    a=0.,
+    p=2.0,
+    a=0.0,
     b=Inf,
+    tol=10^(-2),
+    max_it=200,
     save=true,
     rewrite_save=true
 ) where {T}
@@ -33,6 +35,8 @@ Optimization algorithm to find optimal diffusion
 - `p::Real`: L^p constraint. Defaults to 2..
 - `a::Real`: lower bound for the variable constraint. Defaults to 0..
 - `b::Real`: upper bound for the variable constraint. Defaults to Inf.
+- `tol::Real`: overall NLP error for the IPOPT algorithm. Defaults to 10^(-2).
+- `max_it`: maximum number of iterations for the IPOPT algorithm. Defaults to 200.
 - `save::Bool`: if saving first, second, third and fourth eigenvalues and the constraint and gradient norm values during the optimization procedure. Defaults to true.
 - `rewrite_save::Bool`: if forcing save by rewriting previously saved data. Defaults to true.
 """
@@ -44,6 +48,8 @@ function optim_algo(
     p=2.0,
     a=0.0,
     b=Inf,
+    tol=10^(-2),
+    max_it=200,
     save=true,
     rewrite_save=true
 ) where {T}
@@ -201,9 +207,9 @@ function optim_algo(
     # Create optimiation model using the IPOPT optimizer
     model = Model(Ipopt.Optimizer)
     # Set a maximum number of iterations to 2000
-    set_optimizer_attribute(model, "max_iter", 200)
-    # Set tolerance for the gradient norm
-    set_optimizer_attribute(model, "tol", 1e-4)
+    set_optimizer_attribute(model, "max_iter", max_it)
+    # Set tolerance for the overall NLP error
+    set_optimizer_attribute(model, "tol", tol)
 
     # Register user defined functions
     register(model, :my_f, I, f, ∇f; autodiff=false)
