@@ -17,6 +17,7 @@ The repository contains:
 - RWMH.jl: a Random Walk Metropolis-Hastings algorithm implementation where the optimal diffusion computed with optimal_diffusion_computation.jl can be used as a parameter
 - plot_RWMH.jl: plot (unperiodized) trajectories and sampling results of the RWMH algorithm using either the optimal, homogenized or constant diffusion coefficient
 
+- optimal_diffusion_homogenized_regime.jl: visualization of the behaviour of the optimal diffusion in the asymptotic regime of periodic homogenization. In particular, it shows that (1) the optimal diffusion is $1/k$-periodic, (2) the sequence of rescaled optimal diffusion converges in $L^2$ towards $D_{\mathrm{hom}}^\star$ at rate $\mathrm{O}(k^{-2})$, (3) the sequence of spectral gaps converges to $\Lambda_{\mathrm{hom}}^\star=4\pi^2 / Z$ where $Z=\int_{\mathbb{T}}\mathrm{e}^{-V}$, (4) the minimum of the optimal diffusion quickly goes away from zero
+
 ## TODO
-- Propose a visualization of the behaviour of the optimal diffusion in the asymptotic regime of periodic homogenization
 - Add a comparison with smooth-min approach with analytic gradient formula
