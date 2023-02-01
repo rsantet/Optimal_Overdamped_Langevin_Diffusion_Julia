@@ -69,17 +69,17 @@ println("MH rejection probabilies:")
 println(
     "Optimal: $(MH_opt)\nHomogenized: $(MH_homog)\nConstant: $(MH_constant)"
 )
-# MH rejection probabilies for Δt = 0.01
+# MH rejection probabilies for Δt = 0.01, V = sin_two_wells
 # Optimal: 0.312776
 # Homogenized: 0.279466
 # Constant: 0.324239
 
-# MH rejection probabilies for Δt = 0.001
+# MH rejection probabilies for Δt = 0.001, V = sin_two_wells
 # Optimal: 0.172784
 # Homogenized: 0.117015
 # Constant: 0.114145
 
-# MH rejection probabilies for Δt = 0.0001
+# MH rejection probabilies for Δt = 0.0001, V = sin_two_wells
 # Optimal: 0.064226
 # Homogenized: 0.040612
 # Constant: 0.037898
