@@ -43,15 +43,14 @@ Optimization algorithm to find optimal diffusion
 function optim_algo(
     V,
     I,
-    pi_arr::AbstractVector{T},
-    Z;
-    p=2.0,
-    a=0.0,
-    b=Inf,
-    tol=10^(-2),
-    max_it=200,
-    save=true,
-    rewrite_save=true
+    mu_arr::AbstractVector{T};
+    p = 2.0,
+    a = 0.0,
+    b = Inf,
+    tol = 10^(-2),
+    max_it = 200,
+    save = true,
+    rewrite_save = true,
 ) where {T}
 
     """
@@ -66,22 +65,22 @@ function optim_algo(
     end
 
     """
-        construct_M(I, pi_arr)
+        construct_M(I, mu_arr)
 
         Construct the matrix appearing on the right hand side of the generalized eigenvalue problem
     """
-    function construct_M(I, pi_arr::AbstractVector{T}) where {T}
+    function construct_M(I, mu_arr::AbstractVector{T}) where {T}
         M = zeros(T, I, I)
-        for i in 1:I-1
-            M[i, i] += pi_arr[i] / (3 * I)
-            M[i+1, i+1] += pi_arr[i] / (3 * I)
-            M[i, i+1] += pi_arr[i] / (6 * I)
-            M[i+1, i] += pi_arr[i] / (6 * I)
+        for i = 1:I-1
+            M[i, i] += mu_arr[i] / (3 * I)
+            M[i+1, i+1] += mu_arr[i] / (3 * I)
+            M[i, i+1] += mu_arr[i] / (6 * I)
+            M[i+1, i] += mu_arr[i] / (6 * I)
         end
-        M[I, I] += pi_arr[I] / (3 * I)
-        M[1, 1] += pi_arr[I] / (3 * I)
-        M[I, 1] += pi_arr[I] / (6 * I)
-        M[1, I] += pi_arr[I] / (6 * I)
+        M[I, I] += mu_arr[I] / (3 * I)
+        M[1, 1] += mu_arr[I] / (3 * I)
+        M[I, 1] += mu_arr[I] / (6 * I)
+        M[1, I] += mu_arr[I] / (6 * I)
         return M
     end
 
@@ -94,16 +93,16 @@ function optim_algo(
 
         # Construct the matrix depending on D
         A = zeros(I, I)
-        for i in 1:I-1
-            A[i, i] += x[i] / Z * I
-            A[i+1, i+1] += x[i] / Z * I
-            A[i, i+1] -= x[i] / Z * I
-            A[i+1, i] -= x[i] / Z * I
+        for i = 1:I-1
+            A[i, i] += x[i] * I
+            A[i+1, i+1] += x[i] * I
+            A[i, i+1] -= x[i] * I
+            A[i+1, i] -= x[i] * I
         end
-        A[I, I] += x[I] / Z * I
-        A[1, 1] += x[I] / Z * I
-        A[I, 1] -= x[I] / Z * I
-        A[1, I] -= x[I] / Z * I
+        A[I, I] += x[I] * I
+        A[1, 1] += x[I] * I
+        A[I, 1] -= x[I] * I
+        A[1, I] -= x[I] * I
 
         # Obtain eigenvalues
         eig = eigen(A, M)
@@ -123,16 +122,16 @@ function optim_algo(
 
         # Construct the matrix depending on D
         A = zeros(I, I)
-        for i in 1:I-1
-            A[i, i] += x[i] / Z * I
-            A[i+1, i+1] += x[i] / Z * I
-            A[i, i+1] -= x[i] / Z * I
-            A[i+1, i] -= x[i] / Z * I
+        for i = 1:I-1
+            A[i, i] += x[i] * I
+            A[i+1, i+1] += x[i] * I
+            A[i, i+1] -= x[i] * I
+            A[i+1, i] -= x[i] * I
         end
-        A[I, I] += x[I] / Z * I
-        A[1, 1] += x[I] / Z * I
-        A[I, 1] -= x[I] / Z * I
-        A[1, I] -= x[I] / Z * I
+        A[I, I] += x[I] * I
+        A[1, 1] += x[I] * I
+        A[I, 1] -= x[I] * I
+        A[1, I] -= x[I] * I
 
         # Obtain eigenvalues and eigenvectors
         eig = eigen(A, M)
@@ -143,17 +142,16 @@ function optim_algo(
         val = vals[2]
         vecs = vecs[:, idx]
 
-        # for ergonomix reasons for gradient computation
+        # for ergonomic reasons for gradient computation
         vp = zeros(T, I + 1)
-        vp[1:I] .= vecs[:, 2]
-        vp[I+1] = vp[1]
+        vp[2:I+1] .= vecs[:, 2]
+        vp[1] = vp[I+1]
 
         # matrix corresponding to the tri-diagonal matrix A
-        matA = [1 -1; -1 1]
         norm_factor = vp[1:I]' * M * vp[1:I]
 
-        for i in 1:I
-            g[i] = vp[i:i+1]' * matA * vp[i:i+1] * I / (Z * norm_factor)
+        for i = 1:I
+            g[i] = (vp[i+1]-vp[i])^2 * I / norm_factor
         end
 
         if save
@@ -172,7 +170,7 @@ function optim_algo(
     end
 
     function ∇h(g::AbstractVector{T}, x::T...) where {T<:Real}
-        for i in 1:I
+        for i = 1:I
             g[i] = p * x[i]^(p - 1) / I
         end
         return
@@ -180,8 +178,8 @@ function optim_algo(
 
 
     if save
-        a_rounded = round(a, sigdigits=2)
-        b_rounded = round(b, sigdigits=2)
+        a_rounded = round(a, sigdigits = 2)
+        b_rounded = round(b, sigdigits = 2)
         dir_string = "data/" * string(V) * "/I_$(I)_a_$(a_rounded)_b_$(b_rounded)/"
 
         if !rewrite_save
@@ -199,7 +197,7 @@ function optim_algo(
     end
 
     # Construct M once and for all
-    M = construct_M(I, pi_arr)
+    M = construct_M(I, mu_arr)
 
     # First guess for the optimization procedure, D=1/mu (homogenized diffusion)
     x_init = ones(I)
@@ -212,8 +210,8 @@ function optim_algo(
     set_optimizer_attribute(model, "tol", tol)
 
     # Register user defined functions
-    register(model, :my_f, I, f, ∇f; autodiff=false)
-    register(model, :my_h, I, h, ∇h; autodiff=false)
+    register(model, :my_f, I, f, ∇f; autodiff = false)
+    register(model, :my_h, I, h, ∇h; autodiff = false)
 
     # Variable to be optimized, equal to D*mu
     @variable(model, x[1:I])
@@ -232,14 +230,20 @@ function optim_algo(
     optimize!(model)
 
     # If failure
-    if termination_status(model) != LOCALLY_SOLVED
-        println(termination_status(model))
+    term_status = termination_status(model)
+    if term_status != LOCALLY_SOLVED && term_status != ALMOST_LOCALLY_SOLVED
+        println(term_status)
         println("Not saving")
         return
     end
 
+    if term_status == ALMOST_LOCALLY_SOLVED
+        println(term_status)
+        println("Beware, this was only almost locally solved")
+    end
+
     x_opt = value.(x)
-    XX = [i / I for i in 0:(I-1)]
+    XX = [i / I for i = 0:(I-1)]
     inv_mu_arr = map(x -> exp(V(x)), XX)
     d_opt = x_opt .* inv_mu_arr
     gap_opt = objective_value(model)
@@ -247,37 +251,17 @@ function optim_algo(
     if save
         min_d = minimum(d_opt)
 
-        mkpath(
-            dir_string
-        )
+        mkpath(dir_string)
 
-        writedlm(
-            dir_string * "first_eigenvalue.txt", first_eig
-        )
-        writedlm(
-            dir_string * "second_eigenvalue.txt", second_eig
-        )
-        writedlm(
-            dir_string * "third_eigenvalue.txt", third_eig
-        )
-        writedlm(
-            dir_string * "fourth_eigenvalue.txt", fourth_eig
-        )
-        writedlm(
-            dir_string * "d_opt.txt", d_opt
-        )
-        writedlm(
-            dir_string * "d_opt_gap.txt", [gap_opt]
-        )
-        writedlm(
-            dir_string * "d_opt_min.txt", [min_d]
-        )
-        writedlm(
-            dir_string * "constraint.txt", constraints
-        )
-        writedlm(
-            dir_string * "gradient_norm.txt", norm_jac
-        )
+        writedlm(dir_string * "first_eigenvalue.txt", first_eig)
+        writedlm(dir_string * "second_eigenvalue.txt", second_eig)
+        writedlm(dir_string * "third_eigenvalue.txt", third_eig)
+        writedlm(dir_string * "fourth_eigenvalue.txt", fourth_eig)
+        writedlm(dir_string * "d_opt.txt", d_opt)
+        writedlm(dir_string * "d_opt_gap.txt", [gap_opt])
+        writedlm(dir_string * "d_opt_min.txt", [min_d])
+        writedlm(dir_string * "constraint.txt", constraints)
+        writedlm(dir_string * "gradient_norm.txt", norm_jac)
     end
 
     return d_opt, gap_opt
