@@ -26,8 +26,7 @@ function get_optimal_diffusion_k(
     d_opt, d_opt_gap = optim_algo(
         Vk,
         I,
-        pi_arr,
-        Z;
+        mu_arr;
         p,
         a,
         b,
